@@ -1,5 +1,6 @@
-package main
+package main.day1
 
+import main.util.convertStringToStream
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.io.*
@@ -24,8 +25,7 @@ class Day1Tests {
             263
         """.trimIndent()
 
-        var byteArrayInputStream = ByteArrayInputStream(testData.toByteArray(Charset.defaultCharset()))
-        assertEquals(7, countIncreases(InputStreamReader(byteArrayInputStream)))
+        assertEquals(7, countIncreases(convertStringToStream(testData)))
     }
 
     @Test
@@ -34,8 +34,7 @@ class Day1Tests {
             199
         """.trimIndent()
 
-        var byteArrayInputStream = ByteArrayInputStream(testData.toByteArray(Charset.defaultCharset()))
-        assertEquals(0, countIncreases(InputStreamReader(byteArrayInputStream)))
+        assertEquals(0, countIncreases(convertStringToStream(testData)))
     }
 
     @Test
@@ -44,9 +43,7 @@ class Day1Tests {
             199
             1999
         """.trimIndent()
-
-        var byteArrayInputStream = ByteArrayInputStream(testData.toByteArray(Charset.defaultCharset()))
-        assertEquals(1, countIncreases(InputStreamReader(byteArrayInputStream)))
+        assertEquals(1, countIncreases(convertStringToStream(testData)))
     }
 
     @Test
@@ -55,9 +52,7 @@ class Day1Tests {
             299
             1999
         """.trimIndent()
-
-        var byteArrayInputStream = ByteArrayInputStream(testData.toByteArray(Charset.defaultCharset()))
-        assertEquals(1, countIncreases(InputStreamReader(byteArrayInputStream)))
+        assertEquals(1, countIncreases(convertStringToStream(testData)))
     }
 
 
@@ -75,9 +70,7 @@ class Day1Tests {
             9
             10
         """.trimIndent()
-
-        var byteArrayInputStream = ByteArrayInputStream(testData.toByteArray(Charset.defaultCharset()))
-        assertEquals(7, countSlidingWindowIncreases(InputStreamReader(byteArrayInputStream), 3))
+        assertEquals(7, countSlidingWindowIncreases(convertStringToStream(testData), 3))
     }
 
     @Test
@@ -94,9 +87,7 @@ class Day1Tests {
             260
             263
         """.trimIndent()
-
-        var byteArrayInputStream = ByteArrayInputStream(testData.toByteArray(Charset.defaultCharset()))
-        assertEquals(5, countSlidingWindowIncreases(InputStreamReader(byteArrayInputStream), 3))
+        assertEquals(5, countSlidingWindowIncreases(convertStringToStream(testData), 3))
     }
 
 }

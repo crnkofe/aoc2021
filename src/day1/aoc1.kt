@@ -1,5 +1,6 @@
-package main
+package main.day1
 
+import main.util.loadFileAsStream
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.InputStreamReader
@@ -36,10 +37,9 @@ fun countSlidingWindowIncreases(file : InputStreamReader, windowSize : Int) : In
 fun main(args: Array<String>) {
     var fileName : String = args[0]
     try {
-        var day1Counter = countIncreases(File(fileName).reader(Charset.forName("ASCII")))
+        var day1Counter = countIncreases(loadFileAsStream(fileName))
         println("Day 1 part 2 result: $day1Counter")
-
-        var day1CounterPart2 = countSlidingWindowIncreases(File(fileName).reader(Charset.forName("ASCII")), 3)
+        var day1CounterPart2 = countSlidingWindowIncreases(loadFileAsStream(fileName), 3)
         println("Day 1 part 2 result: $day1CounterPart2")
     } catch (e : FileNotFoundException) {
         println("Input file does not exist ($fileName)")
