@@ -6,6 +6,14 @@ import java.io.InputStreamReader
 import java.lang.Integer.max
 import java.nio.charset.Charset
 
+data class Point(var x: Int, var y: Int) {
+    fun sgn() : Point {
+        return Point(Integer.signum(this.x), Integer.signum(this.y))
+    }
+    operator fun plus(inc: Point) = Point(this.x + inc.x, this.y + inc.y)
+    operator fun minus(inc: Point): Point = Point(this.x - inc.x, this.y - inc.y)
+}
+
 fun sumList(l1 : List<Int>, l2 : List<Int>) : List<Int> =
     (0 until max(l1.size, l2.size)).map { i -> l1.getOrElse(i) { 0 } + l2.getOrElse(i) { 0 } }
 
