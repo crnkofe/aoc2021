@@ -12,6 +12,11 @@ data class Point(var x: Int, var y: Int) {
     }
     operator fun plus(inc: Point) = Point(this.x + inc.x, this.y + inc.y)
     operator fun minus(inc: Point): Point = Point(this.x - inc.x, this.y - inc.y)
+
+    fun neighbours4() : List<Point> {
+        val neighbourPoints = listOf(Point(1, 0), Point(-1, 0), Point(0, 1), Point(0, -1),)
+        return neighbourPoints.map { this + it }
+    }
 }
 
 fun sumList(l1 : List<Int>, l2 : List<Int>) : List<Int> =
