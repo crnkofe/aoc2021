@@ -3,83 +3,57 @@ package main.day10
 import main.util.loadFileAsString
 import java.io.FileNotFoundException
 
-fun findFirstIncorrectCharacter(line : String) : Char? {
-    var stack = mutableListOf<Char>()
+val openingChars = listOf('<', '[', '{', '(')
+val closingChars = listOf('>', ']', '}', ')')
 
-    val openingChars = listOf('<', '[', '{', '(')
-    val closingChars = listOf('>', ']', '}', ')')
+data class SyntaxError(val c : Char?, val completion : String)
 
-    for (c in line) {
-        if (openingChars.contains(c)) {
-            stack.add(c)
-        } else if (stack.isEmpty()) {
-            // incomplete line
-            return null
-        } else if (stack.last() == openingChars[closingChars.indexOf(c)]) {
-            stack.removeLast()
-        } else {
-            // empty stack or invalid current char number
-            return c
-        }
-    }
-
-    // for part 1 we ignore incomplete lines
-    return null
+fun completeStack(chars : List<Char>) : String {
+    return chars.reversed().map { c -> closingChars[openingChars.indexOf(c)] }.joinToString("")
 }
 
 // autocomplete - incomplete line and return completion string
-fun autocompleteLine(line : String) : String {
+fun autocompleteLine(line : String) : SyntaxError {
     var stack = mutableListOf<Char>()
-
-    val openingChars = listOf('<', '[', '{', '(')
-    val closingChars = listOf('>', ']', '}', ')')
-
     for (c in line) {
         if (openingChars.contains(c)) {
             stack.add(c)
         } else if (stack.isEmpty()) {
             // incomplete line
-            return stack.reversed().map { c -> closingChars[openingChars.indexOf(c)] }.joinToString("")
+            return SyntaxError(c, completeStack(stack))
         } else if (stack.last() == openingChars[closingChars.indexOf(c)]) {
             stack.removeLast()
         } else {
-            // empty stack or invalid current char number
-            return ""
+            // invalid current char
+            return SyntaxError(c, "")
         }
     }
 
     // for part 1 we ignore incomplete lines
-    return stack.reversed().map { c -> closingChars[openingChars.indexOf(c)] }.joinToString("")
+    return SyntaxError(null, completeStack(stack))
 }
 
 fun calculateSyntaxScore(input : String) : Long {
-    val scoreBoard = mapOf(Pair(')', 3.toLong()), Pair(']', 57.toLong()), Pair('}', 1197.toLong()), Pair('>', 25137.toLong()))
-
-    val intermediateResults = input.split("\n")
-        .mapNotNull { findFirstIncorrectCharacter(it) }
-
-    return intermediateResults
+    val scoreBoard = mapOf<Char, Long>(')' to 3, ']' to 57, '}' to 1197, '>' to 25137)
+    return input.split("\n")
+        .mapNotNull { autocompleteLine(it).c }
         .sumOf { scoreBoard.getOrDefault(it, 0.toLong()) }
 }
 
 fun calculateSingleAutocompleteScore(line : String) : Long {
-    val scoreboard = mapOf(Pair(')', 1), Pair(']', 2), Pair('}', 3), Pair('>', 4))
-    var totalScore : Long = 0
-    for (c in line) {
-        totalScore = totalScore * 5 + scoreboard.getOrDefault(c, 0)
-    }
-    return totalScore
+    val scoreboard = mapOf(')' to 1, ']' to 2, '}' to 3, '>' to 4)
+    return line
+        .map { scoreboard.getOrDefault(it, 0) }
+        .fold(0) { acc, it -> acc * 5 + it }
 }
 
 fun calculateAutocompleteScore(input : String) : Long {
-    val intermediateResults = input.split("\n")
-        .mapNotNull { autocompleteLine(it) }
+    val scores = input.split("\n")
+        .map { autocompleteLine(it) }
+        .filter { it.completion.isNotEmpty() }
+        .map { calculateSingleAutocompleteScore(it.completion) }
 
-    val finalScores = intermediateResults
-        .filter { it.isNotEmpty() }
-        .map { calculateSingleAutocompleteScore(it) }
-
-    return finalScores.sorted()[finalScores.size / 2]
+    return scores.sorted()[scores.size / 2]
 }
 
 fun main(args: Array<String>) {
