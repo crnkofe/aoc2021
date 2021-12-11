@@ -1,19 +1,12 @@
 package main.day9
 
+import main.util.Board
 import main.util.Point
 import main.util.loadFileAsString
 import java.io.FileNotFoundException
 
-data class Board(var points : List<List<Int>>) {
-    fun at (p: Point) : Int? {
-        return points
-            .getOrElse(p.y) { listOf() }
-            .getOrNull(p.x)
-    }
-}
-
 fun toBoard(s : String) : Board {
-    return Board(s.split("\n").map { it -> it.map { it.digitToInt() } })
+    return Board(s.split("\n").map { it -> it.map { it.digitToInt() }.toMutableList() }.toMutableList())
 }
 
 fun isLowPoint(p : Point, board : Board) : Boolean {
