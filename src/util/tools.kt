@@ -5,6 +5,7 @@ import java.io.File
 import java.io.InputStreamReader
 import java.lang.Integer.max
 import java.nio.charset.Charset
+import kotlin.math.abs
 
 data class Point(var x: Int, var y: Int) {
     fun sgn() : Point {
@@ -30,6 +31,7 @@ data class Point(var x: Int, var y: Int) {
         }
         return neighbourPoints
     }
+
 }
 
 data class PointIterator(val b : Board, val p : Point) : Iterator<Point> {
@@ -86,6 +88,10 @@ data class Board(var points: MutableList<MutableList<Int>>) {
         return this.points
             .joinToString("\n") { row -> row.map { it.digitToChar() }.joinToString("") }
     }
+}
+
+fun manhattan(p1: Point, p2: Point) : Int {
+    return abs(p2.x - p1.x) + abs(p2.y - p1.y)
 }
 
 fun sumList(l1 : List<Int>, l2 : List<Int>) : List<Int> =
