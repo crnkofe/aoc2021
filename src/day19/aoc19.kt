@@ -5,6 +5,8 @@ import org.apache.commons.math3.geometry.euclidean.threed.Rotation
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 import java.io.FileNotFoundException
 import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 
@@ -32,7 +34,7 @@ import kotlin.math.roundToInt
  * We want each scanner position and orientation (set of valid beacon measurements.
  */
 
-data class Scanner(val name : String, val original : BeaconCloud, var beaconClouds : List<BeaconCloud>) {
+data class Scanner(val name : String, val original : BeaconCloud, var beaconClouds : List<BeaconCloud>, val diffV : Vector3D) {
 
 }
 data class BeaconCloud(val rotation : Rotation, val points : MutableList<Vector3D>) {
@@ -56,7 +58,7 @@ fun parseScanners(s : String) : List<Scanner> {
         val match = nameRegex.matchEntire(line)
         if (match != null) {
             if (currentPoints.isNotEmpty()) {
-                scanners.add(Scanner(name, BeaconCloud(Rotation(Vector3D(0.0, 0.0, 1.0), 0.0), currentPoints.toMutableList()), listOf()))
+                scanners.add(Scanner(name, BeaconCloud(Rotation(Vector3D(0.0, 0.0, 1.0), 0.0), currentPoints.toMutableList()), listOf(), Vector3D(0.0, 0.0, 0.0)))
                 currentPoints = mutableSetOf()
             }
             name = match.groupValues[1]
@@ -74,7 +76,7 @@ fun parseScanners(s : String) : List<Scanner> {
         }
     }
     if (currentPoints.isNotEmpty()) {
-        scanners.add(Scanner(name,  BeaconCloud(Rotation(Vector3D(0.0, 0.0, 1.0), 0.0), currentPoints.toMutableList()), listOf()))
+        scanners.add(Scanner(name,  BeaconCloud(Rotation(Vector3D(0.0, 0.0, 1.0), 0.0), currentPoints.toMutableList()), listOf(), Vector3D(0.0, 0.0, 0.0)))
     }
     return scanners.toList()
 }
@@ -123,7 +125,7 @@ fun intersectScanners(s1 : Scanner, s2 : Scanner) : Scanner? {
                 // the following code (translates new scanner to original scanner which in theory should result in some overlaps)
                 val originalBeaconCloud = BeaconCloud(s2Beacons[bc2].rotation, s2Beacons[bc2].points)
                 originalBeaconCloud.addVec(Vector3D(v.map { it.toDouble() }.toDoubleArray()))
-                return Scanner(s2.name, originalBeaconCloud, listOf())
+                return Scanner(s2.name, originalBeaconCloud, listOf(), Vector3D(v.map { it.toDouble() }.toDoubleArray()))
             }
         }
 
@@ -131,14 +133,25 @@ fun intersectScanners(s1 : Scanner, s2 : Scanner) : Scanner? {
 }
 
 fun countBeacons(s : String) : Int {
-    var scanners = parseScanners(s).map { scanner -> Scanner(scanner.name, scanner.original, generateClouds(scanner.original.points)) }
-    var distances = mutableListOf<Vector3D>()
+    var alignedScanners = alignScanners(s)
+    return alignedScanners.map { it.original.points }.reduce { acc,v -> acc.union(v.toSet()).toMutableList() }.count()
+}
+
+private fun alignScanners(s: String): MutableList<Scanner> {
+    var scanners = parseScanners(s).map { scanner ->
+        Scanner(
+            scanner.name,
+            scanner.original,
+            generateClouds(scanner.original.points),
+            scanner.diffV
+        )
+    }
     var alignedScanners = mutableListOf(scanners[0])
     var unalignedScanners = scanners.drop(1).toMutableList()
     while (!unalignedScanners.isEmpty()) {
         var scanner = unalignedScanners.removeFirst()
 
-        var firstIntersect : Scanner? = null
+        var firstIntersect: Scanner? = null
         for (alignedScanner in alignedScanners) {
             firstIntersect = intersectScanners(alignedScanner, scanner)
             if (firstIntersect != null) {
@@ -151,7 +164,20 @@ fun countBeacons(s : String) : Int {
             unalignedScanners.add(scanner)
         }
     }
-    return alignedScanners.map { it.original.points }.reduce { acc,v -> acc.union(v.toSet()).toMutableList() }.count()
+    return alignedScanners
+}
+
+fun findScannerDistances(s : String) : Int {
+    var alignedScanners = alignScanners(s)
+    val vecs = alignedScanners.map { it.diffV }
+    var maxDist = 0.0
+    for (v1 in vecs) {
+        for (v2 in vecs) {
+            val dist = abs(v2.x - v1.x) + abs(v2.y - v1.y) + abs(v2.z - v1.z)
+            maxDist = max(dist, maxDist)
+        }
+    }
+    return maxDist.roundToInt()
 }
 
 fun main(args: Array<String>) {
@@ -159,7 +185,7 @@ fun main(args: Array<String>) {
     try {
         val part1Result = countBeacons(loadFileAsString(fileName))
         println("Day 19 part 1 result: $part1Result")
-        val part2Result = 0 // evaluateFileForMaxExpression(loadFileAsString(fileName))
+        val part2Result = findScannerDistances(loadFileAsString(fileName))
         println("Day 19 part 2 result: $part2Result")
     } catch (e: FileNotFoundException) {
         println("Input file does not exist ($fileName)")
