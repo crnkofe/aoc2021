@@ -7,6 +7,11 @@ import java.lang.Integer.max
 import java.nio.charset.Charset
 import kotlin.math.abs
 
+
+data class Point3(var x: Int, var y: Int, var z: Int) {
+
+}
+
 data class Point(var x: Int, var y: Int) {
     fun sgn() : Point {
         return Point(Integer.signum(this.x), Integer.signum(this.y))
